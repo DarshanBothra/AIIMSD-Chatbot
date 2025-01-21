@@ -1,0 +1,64 @@
+{
+    "Symptoms_orthopedic": [
+      {
+        "Symptom": "Joint pain",
+        "Description": "Persistent discomfort or aching in joints."
+      },
+      {
+        "Symptom": "Swelling",
+        "Description": "Inflammation or puffiness around a joint or bone."
+      },
+      {
+        "Symptom": "Stiffness",
+        "Description": "Difficulty in moving a joint, especially after rest."
+      },
+      {
+        "Symptom": "Limited range of motion",
+        "Description": "Inability to move a joint through its normal range."
+      },
+      {
+        "Symptom": "Bone pain",
+        "Description": "Deep, aching pain in the bones."
+      },
+      {
+        "Symptom": "Muscle weakness",
+        "Description": "Reduced strength in muscles supporting the bones."
+      },
+      {
+        "Symptom": "Numbness or tingling",
+        "Description": "Loss of sensation or pins-and-needles feeling, often in extremities."
+      },
+      {
+        "Symptom": "Deformity",
+        "Description": "Visible abnormality in the shape of bones or joints."
+      },
+      {
+        "Symptom": "Back pain",
+        "Description": "Chronic or acute pain in the lower or upper back."
+      },
+      {
+        "Symptom": "Instability",
+        "Description": "Feeling of giving way or lack of support in a joint."
+      },
+      {
+        "Symptom": "Crepitus",
+        "Description": "Crackling or grinding sound in a joint during movement."
+      },
+      {
+        "Symptom": "Difficulty walking",
+        "Description": "Trouble with mobility due to pain or instability."
+      },
+      {
+        "Symptom": "Bruising",
+        "Description": "Discoloration of the skin due to injury to bones or soft tissues."
+      },
+      {
+        "Symptom": "Spasms",
+        "Description": "Involuntary muscle contractions causing pain."
+      },
+      {
+        "Symptom": "Tenderness",
+        "Description": "Sensitivity to touch or pressure over a bone or joint."
+      }
+    ]
+  }
