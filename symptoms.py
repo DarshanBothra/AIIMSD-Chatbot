@@ -1,3 +1,10 @@
+'''
+- is it necessary to use apis?
+- we have generalized it to recognize all symptoms and ask the user to see an orthopaedic doctor if some matches are found (60% of total symptoms or greater than 3 symptoms, then we recommend orthopaedics)
+- are the follow-up questions supposed to be asked for every symptom or not?
+- some details on evaluation
+'''
+
 import re
 from datetime import datetime
 import json
@@ -5,10 +12,10 @@ import requests
 
 global questions
 questions = [
-    "Please describe your symptoms.",
-    "How frequent are these diseases (eg. occasionally, quiet frequently, all the time)?",
-    "When did you start noticing these symptoms?",
-    "How severe are these symptoms on the scale of 1 to 10?"
+    "Please describe your symptoms. (mandatory)",
+    "How frequent are these diseases (eg. occasionally, quiet frequently, all the time)? (mandatory)",
+    "When did you start noticing these symptoms?\nPlease write an overall start time since you started noticing these symptoms (mandatory)",
+    "How severe are these symptoms on the scale of 1 (mild) to 10 (extremely severe)?\nPlease enter an overall severity of the symptoms you are having, rate according to the degree of uneasiness or pain that you are having (mandatory)"
 ]
 def greet()->None:
     greeting:str = ""
@@ -61,9 +68,24 @@ def identifySymptoms(symptom_input_string: str)->list[str]:
                                     break
             else:
                 if token == "pain" and tokens[i+1] == "in":
-                    symptom  = f"pain in {tokens[i + 2]}"
-                    if symptom not in symptoms_detected:
-                        symptoms_detected.append(symptom)
+                    after_and = ""
+                    all_pain = []
+                    if tokens[i+2] == "my":
+                        symptom = f"pain in {tokens[i+3]}"
+                        all_pain.append(symptom)
+                        if tokens[i+4] == "and":
+                            after_and = tokens[i+5]
+                    else:
+                        symptom  = f"pain in {tokens[i + 2]}"
+                        all_pain.append(symptom)
+                        if tokens[i+3] == "and":
+                            after_and = tokens[i+4]
+                    if after_and:
+                        all_pain.append(f"pain in {after_and}")
+                    for symptom in all_pain:
+                        if symptom not in symptoms_detected:
+                            symptoms_detected.append(symptom)
+
         i+=1
 
     return symptoms_detected
@@ -84,6 +106,10 @@ def getFrequency(response_tokens: list[str])->str:
         if response_tokens[i] in special:
             result = " ".join(response_tokens[i:])
             break
+        for fre in freq:
+            if fre in " ".join(response_tokens):
+                result = freq
+                break
         i += 1
     return result
 def getStart(response_tokens: list[str])->str:
@@ -205,6 +231,8 @@ def checkOrthoSymptoms(symptom_list: list[str])->bool:
 
     if len(matched) >= 3:
         return True
+    elif len(matched)/len(symptom_list) >= 0.6:
+        return True
     return False
 def extract_full_name(user_input):
     """Extract the full name from You ."""
@@ -276,32 +304,41 @@ def check_medical_history(user_input):
 
     return medical_conditions
 def getDemographics():
-    """Run the merged chatbot conversation."""
+    """Run the merged Assistant conversation."""
 
-    user_input = input("Chatbot: Hello, what’s your name?\nYou : ")
+    user_input = input("Assistant: Hello, what’s your name?\nYou : ")
     full_name = extract_full_name(user_input)
-    print(f"\nChatbot: Hi, {full_name}, what’s your age?")
-
+    if full_name == "Could not extract a proper name.":
+        print(f"Assistant: {full_name}")
+        print("Assistant: Please state your name clearly")
+        user_input = input("You: ")
+        full_name = extract_full_name(user_input)
+    print(f"\nAssistant: Hi, {full_name}, what’s your age?")
+    
     age_data = load_age_mapping()
     if not age_data:
         return
     user_input = input("You : ")
     age = extract_age(user_input, age_data)
     age_response = f"{age}" if age is not None else "Could not determine age."
+    if age_response == "Could not determine age.":
+        user_input = input("Assistant: Please state your age clearly.\nYou:")
+        age = extract_age(user_input, age_data)
+        age_response = f"{age}" if age is not None else "Could not determine age. Lets move on to the next question"
     print(
-        f"\nChatbot: Your age is {age_response}. What’s your gender? (e.g., Male, Female, Non-binary, Prefer not to say)")
+        f"\nAssistant: Your age is {age_response}.\nWhat’s your gender? (e.g., Male, Female, Non-binary, Prefer not to say)")
 
     user_input = input("You : ")
     gender = extract_gender(user_input)
-    print(f"\nChatbot: You selected: {gender}.")
+    print(f"\nAssistant: You selected: {gender}.")
 
-    user_input = input("\nChatbot: Could you please tell me about any previous medical conditions or diseases?\nYou : ")
+    user_input = input("\nAssistant: Could you please tell me about any previous/current medical conditions or diseases if any?\nYou : ")
     medical_conditions = check_medical_history(user_input)
 
     if medical_conditions:
-        print("\nChatbot: Medical history has been noted.")
+        print("\nAssistant: Medical history has been noted.")
     else:
-        print("\nChatbot: No specific medical conditions noted.")
+        print("\nAssistant: No specific medical conditions noted.")
 def main()->None:
     """
     main call stack of the program. Initializes and runs the chat algorithms
