@@ -1,9 +1,12 @@
-'''
-- is it necessary to use apis?
-- we have generalized it to recognize all symptoms and ask the user to see an orthopaedic doctor if some matches are found (60% of total symptoms or greater than 3 symptoms, then we recommend orthopaedics)
-- are the follow-up questions supposed to be asked for every symptom or not?
-- some details on evaluation
-'''
+"""
+Project By:
+2024176 - Darshan Bothra
+2024369 - Namish Batra
+2024203 - Divyansh Singhwal
+2024521 - Shashank Kumar
+2024161 - Chinmay Chaudhari
+2024170 - Daksh Singh
+"""
 
 import re
 from datetime import datetime
@@ -47,6 +50,10 @@ def identifySymptoms(symptom_input_string: str)->list[str]:
         data = json.load(f)
 
     i = 0
+    for symptom in data:
+        if symptom in symptom_input_string:
+            if symptom not in symptoms_detected:
+                symptoms_detected.append(symptom)
     while i< len(tokens):
         token = tokens[i]
         if token in data:
@@ -234,8 +241,13 @@ def checkOrthoSymptoms(symptom_list: list[str])->bool:
     elif len(matched)/len(symptom_list) >= 0.6:
         return True
     return False
+
+
+import re
+import json
+
+
 def extract_full_name(user_input):
-    """Extract the full name from You ."""
     phrases = ["my name is", "call me", "it's", "it is", "i am", "i'm", "name’s", "they call me", "i’m"]
     user_input = user_input.strip().lower()
     for phrase in phrases:
@@ -246,6 +258,8 @@ def extract_full_name(user_input):
     if re.match(r'^[a-zA-Z\s]+$', user_input):
         return user_input.title()
     return "Could not extract a proper name."
+
+
 def load_age_mapping():
     try:
         with open('a2.json', 'r') as f:
@@ -253,8 +267,9 @@ def load_age_mapping():
     except FileNotFoundError:
         print("Error: age_mapping.json file not found!")
         return None
+
+
 def extract_age(text, age_data):
-    """Extract age from You  using numeric and word-based matching."""
     ages = []
     numeric_pattern = r'\b([1-9]|[1-9][0-9]|1[0-4][0-9]|150)\b'
     numeric_matches = re.finditer(numeric_pattern, text)
@@ -267,8 +282,9 @@ def extract_age(text, age_data):
         if any(word in text_lower for word in words):
             ages.append(int(num_str))
     return max(ages) if ages else None
+
+
 def extract_gender(user_input):
-    """Extract gender from You ."""
     male_keywords = ["male", "man", "boy", "guy"]
     female_keywords = ["female", "woman", "girl", "lady"]
     nonbinary_keywords = ["non binary", "nonbinary", "non-binary", "nb", "gender-neutral"]
@@ -286,59 +302,116 @@ def extract_gender(user_input):
     elif any(word in words for word in prefer_not_keywords):
         return "Prefer Not to Say"
     return "Prefer Not to Say."
-def check_medical_history(user_input):
-    """Check if the input contains any medical condition from the list."""
+
+
+def find_disease_match(user_input, disease_file):
     try:
-        with open('disease.json', 'r') as f:
-            disease_data = json.load(f)
+        with open(disease_file, 'r') as file:
+            disease_data = json.load(file)
     except FileNotFoundError:
-        print("Error: disease.json file not found!")
-        return None
+        return "Disease file not found."
+    except json.JSONDecodeError:
+        return "Error decoding the JSON file."
 
-    medical_conditions = []
-    user_input = user_input.lower()
+    user_input = user_input.lower().strip()
 
-    for disease in disease_data["diseases"]:
+    if "diabetes" in user_input or "sugar" in user_input or "sugar diabetes" in user_input or "diabetic" in user_input:
+        return ["Diabetes"]
+
+    matches = []
+    if "cancer" in user_input:
+        cancer_types = [
+            "Breast Cancer", "Lung Cancer", "Colorectal Cancer", "Prostate Cancer",
+            "Pancreatic Cancer", "Skin Cancer", "Leukemia", "Lymphoma", "Ovarian Cancer"
+        ]
+        return cancer_types
+
+    for disease, synonyms in disease_data.items():
         if disease.lower() in user_input:
-            medical_conditions.append(disease)
+            matches.append(disease)
+            continue
+        for synonym in synonyms:
+            if synonym.lower() in user_input:
+                matches.append(disease)
+                break
 
-    return medical_conditions
+    return matches
+
+
+def handle_medical_conditions(user_input, disease_file):
+    stored_conditions = []
+
+    if "diabetic" in user_input or "diabetes" in user_input or "sugar" in user_input or "sugar diabetes" in user_input:
+        stored_conditions.append("Diabetes")
+        if "type 1" in user_input:
+            stored_conditions.append("Type 1 Diabetes")
+        elif "type 2" in user_input:
+            stored_conditions.append("Type 2 Diabetes")
+
+    matches = find_disease_match(user_input, disease_file)
+    if matches:
+        if len(matches) > 1:
+            print("Chatbot: Multiple diseases found. Please choose which one best describes your condition:")
+            for idx, condition in enumerate(matches):
+                print(f"{idx + 1}. {condition}")
+            choice = int(input("Chatbot: Please enter the number corresponding to your condition.\nUser input: "))
+            return [matches[choice - 1]]
+        else:
+            stored_conditions.append(matches[0])
+
+    if not stored_conditions:
+        print("Chatbot: Could not find any matches in the database.")
+        user_input = input(
+            "Chatbot: Is there another, more scientific name for your disease?\nUser input: ").strip().lower()
+        matches = find_disease_match(user_input, disease_file)
+        if matches:
+            stored_conditions.extend(matches)
+        else:
+            print("Chatbot: Sorry, I couldn’t find anything in the database. Could you try again?")
+
+    return stored_conditions
+
+
 def getDemographics():
-    """Run the merged Assistant conversation."""
+    name_input = input("Chatbot: Hello, what is your name?\nUser input: ")
+    full_name = extract_full_name(name_input)
+    print(f"Chatbot: Nice to meet you, {full_name}!")
 
-    user_input = input("Assistant: Hello, what’s your name?\nYou : ")
-    full_name = extract_full_name(user_input)
-    if full_name == "Could not extract a proper name.":
-        print(f"Assistant: {full_name}")
-        print("Assistant: Please state your name clearly")
-        user_input = input("You: ")
-        full_name = extract_full_name(user_input)
-    print(f"\nAssistant: Hi, {full_name}, what’s your age?")
-    
+    age_input = input("Chatbot: How old are you?\nUser input: ")
     age_data = load_age_mapping()
-    if not age_data:
-        return
-    user_input = input("You : ")
-    age = extract_age(user_input, age_data)
-    age_response = f"{age}" if age is not None else "Could not determine age."
-    if age_response == "Could not determine age.":
-        user_input = input("Assistant: Please state your age clearly.\nYou:")
-        age = extract_age(user_input, age_data)
-        age_response = f"{age}" if age is not None else "Could not determine age. Lets move on to the next question"
-    print(
-        f"\nAssistant: Your age is {age_response}.\nWhat’s your gender? (e.g., Male, Female, Non-binary, Prefer not to say)")
-
-    user_input = input("You : ")
-    gender = extract_gender(user_input)
-    print(f"\nAssistant: You selected: {gender}.")
-
-    user_input = input("\nAssistant: Could you please tell me about any previous/current medical conditions or diseases if any?\nYou : ")
-    medical_conditions = check_medical_history(user_input)
-
-    if medical_conditions:
-        print("\nAssistant: Medical history has been noted.")
+    age = extract_age(age_input, age_data)
+    if age:
+        print(f"Chatbot: You are {age} years old.")
     else:
-        print("\nAssistant: No specific medical conditions noted.")
+        print("Chatbot: I couldn't extract your age, but that's okay.")
+
+    gender_input = input("Chatbot: What is your gender?\nUser input: ")
+    gender = extract_gender(gender_input)
+    print(f"Chatbot: You identified as {gender}.")
+
+    user_input = input("Chatbot: Do you have a medical condition or disease? (yes/no)\nUser input: ").strip().lower()
+
+    while user_input not in ["yes", "no"]:
+        print("Chatbot: Please enter a valid response.")
+        user_input = input(
+            "Chatbot: Do you have a medical condition or disease? (yes/no)\nUser input: ").strip().lower()
+
+    if user_input == "yes":
+        user_input = input(
+            "Chatbot: Could you please tell me about any previous medical conditions or diseases?\nUser input: ")
+        disease_file = "disease2.json"
+        medical_conditions = handle_medical_conditions(user_input, disease_file)
+
+        if medical_conditions:
+            print(f"\nChatbot: {', '.join(medical_conditions)}")
+        else:
+            print("\nChatbot: No specific medical conditions noted.")
+
+    elif user_input == "no":
+        print("\nChatbot: No medical condition noted.")
+
+
+
 def main()->None:
     """
     main call stack of the program. Initializes and runs the chat algorithms
