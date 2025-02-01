@@ -116,9 +116,10 @@ def check_medical_history(user_input, yn)->list[str]:
         print("\nAssistant: No medical condition noted.")
         return []
 def configureLLM()->None:
-    with open("apikey.txt", "r") as f:
-        API_KEY = f.read()
+    # with open("apikey.txt", "r") as f:
+    #     API_KEY = f.read()
 
+    API_KEY = "<Your GEMINI API KEY here>"
     genai.configure(api_key=API_KEY, transport = "rest")
     global model
     model = genai.GenerativeModel("gemini-1.5-flash")
