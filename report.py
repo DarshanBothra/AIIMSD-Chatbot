@@ -1,3 +1,7 @@
+"""
+THis module used deepseek-r1:7b model. Please install the model via ollama on your local runtime before using the program.
+"""
+
 import chatbot2
 import ollama
 import pdf_gen
