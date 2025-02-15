@@ -148,8 +148,10 @@ def check_medical_history(user_input, yn) -> list[str]:
 
 
 def configureLLM() -> None:
-    with open("apikey.txt", "r") as f:
-        API_KEY = f.read()
+    # with open("apikey.txt", "r") as f:
+    #     API_KEY = f.read()
+
+    API_KEY = "<YOUR GEMINI API KEY HERE>"
 
     genai.configure(api_key=API_KEY, transport="rest")
     global model
