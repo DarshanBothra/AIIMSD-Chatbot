@@ -22,8 +22,8 @@ OrthoCheck is a Streamlit-based web application designed to provide medical asse
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/orthocheck.git
-   cd orthocheck
+   git clone https://github.com/DarshanBothra/AIIMSD-Chatbot.git
+   cd AIIMSD-Chatbot
    ```
 
 2. **Create and activate a virtual environment**
@@ -59,7 +59,7 @@ OrthoCheck is a Streamlit-based web application designed to provide medical asse
 To run the OrthoCheck Medical Assistant, make sure your virtual environment is activated and execute:
 
 ```bash
-streamlit run main.py
+streamlit run Frontend/main.py
 ```
 
 This command starts the Streamlit server and launches the application. By default, Streamlit will:
@@ -76,7 +76,7 @@ To stop the application, press `Ctrl+C` in the terminal where Streamlit is runni
 If port 8501 is already in use, you can specify a different port:
 
 ```bash
-streamlit run main.py --server.port 8502
+streamlit run Frontend/main.py --server.port 8502
 ```
 
 ### Running in Headless Mode
@@ -84,7 +84,7 @@ streamlit run main.py --server.port 8502
 To run the application without automatically opening a browser:
 
 ```bash
-streamlit run main.py --server.headless true
+streamlit run Frontend/main.py --server.headless true
 ```
 
 ## Usage
